@@ -1,7 +1,8 @@
 module XupaEmec
   class Crawler
-    def initialize(agent = Mechanize.new)
-      @agent = agent
+    def initialize(options={})
+      @search_courses = options[:search_courses]
+      @agent = options[:agent] || Mechanize.new
     end
     
     attr_reader :agent
@@ -36,6 +37,10 @@ module XupaEmec
 
       ies_info['nome'] = ies_data.search("table.tab_paleta > tr:nth-child(4) tr:nth-child(1) > td:nth-child(2)").first.text.strip
 
+      ies_info['sigla'] = ies_info['nome'].split(' - ')[1..-1].join('-')
+
+      ies_info['nome_limpo'] = ies_info['nome'].split(' - ')[0].mb_chars.titleize
+
       ies_info['cidade'] = ies_data.search("table.tab_paleta > tr:nth-child(4) tr:nth-child(5) > td:nth-child(2)").first.text.strip
 
       ies_info['tel'] = ies_data.search("table.tab_paleta > tr:nth-child(4) tr:nth-child(6) > td:nth-child(2)").first.text.strip
@@ -44,7 +49,13 @@ module XupaEmec
 
       ies_info['site'] = ies_data.search("table.tab_paleta > tr:nth-child(4) tr:nth-child(7) > td:nth-child(4)").first.text.strip
 
-      ies_info['email'] = ies_data.search("table.tab_paleta > tr:nth-child(4) tr:nth-child(8) > td:nth-child(2)").first.text.strip
+      ies_info['email'] = ies_data.search("table.tab_paleta > tr:nth-child(4) tr:nth-child(8) > td:nth-child(2)").first.text.strip.split(/\s*[\s,;\/\\]\s*/).join(',')
+
+      if @search_courses
+        courses_page= agent.get("http://emec.mec.gov.br/emec/consulta-ies/listar-curso-agrupado/#{ies_url}/page/1/list/1000")
+        ies_info['num_cursos'] = courses_page.search("div.campform > div:first-child").text.match(/Registro\(s\)\: 1 a \d+ de (\d+)/)[1]
+        ies_info['lista_cursos'] = courses_page.search("table#listar-ies-cadastro > tbody > tr").map{|l| l.search('td').first.text.gsub('&nbsp;', '').strip}.join(', ')
+      end      
 
       puts "Informação processada para '#{ies_search_name}' :"
       puts ies_info.to_yaml
