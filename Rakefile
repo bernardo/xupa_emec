@@ -19,9 +19,15 @@ Jeweler::Tasks.new do |gem|
   gem.description = %Q{TODO: longer description of your gem}
   gem.email = "berpasan@gmail.com"
   gem.authors = ["Bernardo de Pádua"]
+  gem.executables = ['bin/xupa_emec']
   # Include your dependencies below. Runtime dependencies are required when using your gem,
   # and development dependencies are only needed for development (ie running rake tasks, tests, etc)
-  #  gem.add_runtime_dependency 'jabber4r', '> 0.1'
+  gem.add_runtime_dependency 'active_support', '~> 3.0'
+  gem.add_runtime_dependency 'mechanize', '~> 1.0'
+  gem.add_runtime_dependency 'trollop', '~> 1.16'
+  gem.add_runtime_dependency 'fastercsv', '~> 1.5'
+  gem.add_runtime_dependency 'nokogiri', '~> 1.4'
+
   #  gem.add_development_dependency 'rspec', '> 1.2.3'
 end
 Jeweler::RubygemsDotOrgTasks.new
@@ -29,13 +35,6 @@ Jeweler::RubygemsDotOrgTasks.new
 require 'rake/testtask'
 Rake::TestTask.new(:test) do |test|
   test.libs << 'lib' << 'test'
-  test.pattern = 'test/**/test_*.rb'
-  test.verbose = true
-end
-
-require 'rcov/rcovtask'
-Rcov::RcovTask.new do |test|
-  test.libs << 'test'
   test.pattern = 'test/**/test_*.rb'
   test.verbose = true
 end

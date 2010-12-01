@@ -1,6 +1,6 @@
 = xupa_emec
 
-Description goes here.
+Xupa dados sobre instituições de ensino superior do site do e-MEC num formato CSV. 
 
 == Contributing to xupa_emec
  
