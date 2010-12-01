@@ -53,10 +53,12 @@ module XupaEmec
 
       if @search_courses
         courses_page= agent.get("http://emec.mec.gov.br/emec/consulta-ies/listar-curso-agrupado/#{ies_url}/page/1/list/1000")
-        ies_info['num_cursos'] = courses_page.search("div.campform > div:first-child").text.match(/Registro\(s\)\: 1 a \d+ de (\d+)/)[1]
-        ies_info['lista_cursos'] = courses_page.search("table#listar-ies-cadastro > tbody > tr").map{|l| l.search('td').first.text.gsub('&nbsp;', '').strip}.join(', ')
-      end      
-
+        match_results = courses_page.search("div.campform > div:first-child").text.match(/Registro\(s\)\: 1 a \d+ de (\d+)/)
+        if match_results
+          ies_info['num_cursos'] = match_results[1]
+          ies_info['lista_cursos'] = courses_page.search("table#listar-ies-cadastro > tbody > tr").map{|l| l.search('td').first.text.gsub('&nbsp;', '').strip}.join(', ')
+        end      
+      end
       puts "Informação processada para '#{ies_search_name}' :"
       puts ies_info.to_yaml
       
