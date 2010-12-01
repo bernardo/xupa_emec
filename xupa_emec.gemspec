@@ -27,8 +27,11 @@ Gem::Specification.new do |s|
     "Rakefile",
     "bin/xupa_emec",
     "lib/xupa_emec.rb",
+    "lib/xupa_emec/crawler.rb",
+    "lib/xupa_emec/version.rb",
     "test/helper.rb",
-    "test/test_xupa_emec.rb"
+    "test/test_xupa_emec.rb",
+    "xupa_emec.gemspec"
   ]
   s.homepage = %q{http://github.com/bernardo/xupa_emec}
   s.licenses = ["MIT"]
