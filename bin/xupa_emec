@@ -1,3 +1,46 @@
 #!/usr/bin/env ruby
-$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
+# $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 require 'xupa_emec'
+
+opts = Trollop::options do
+  version "xupa emec #{XupaEmec::Version::STRING} (c) 2010 Bernardo de Pádua"
+  banner <<-EOS
+Xupe as informações do e-mec a partir de uma lista de IESs exportada no site.
+
+Uso:
+       xupa_emec -i rela.xls -o ies.csv
+as opções são:
+  EOS
+  opt :entrada, "Arquivo fonte com lista de faculdades exportadas pelo emec", :short => 'i', :default => 'in.xls'
+  opt :saida, "Arquivo csv que será gerado", :short => 'o', :default => 'out.csv'
+end
+
+crawler = XupaEmec::Crawler.new
+
+File.open(opts[:entrada], "r") do |input|
+
+  in_html = doc = Nokogiri::HTML(input)
+  iess_to_search = in_html.css('table:nth-child(2) tbody tr')
+
+  puts "Vamos importar #{iess_to_search.size} IESs..."
+  puts
+
+  iess_to_search.each_with_index do |line, index|
+
+    FasterCSV.open(opts[:saida], "w", 
+      :write_headers => true,
+      :headers => ['nome', 'tipo', 'cidade', 'tel', 'site', 'email', 'mantenedora', 'representante_nome', 'representante_primeiro_nome', 'representante_cargo']) do |out_csv|
+
+      raw_name = line.css('td:nth-child(2)').text.strip
+      ies_search_name = raw_name.split('-').max{|a,b| a.length <=> b.length } #pega o nome maior
+      
+      puts
+      puts "#{index+1} - Buscando nome da instituição '#{ies_search_name}'..."
+
+      out_csv << crawler.crawl(ies_search_name)
+
+    end
+
+  end
+
+end

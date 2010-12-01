@@ -9,25 +9,28 @@ rescue Bundler::BundlerError => e
 end
 require 'rake'
 
+require 'lib/xupa_emec/version'
+
 require 'jeweler'
 Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
+  
   gem.name = "xupa_emec"
   gem.homepage = "http://github.com/bernardo/xupa_emec"
   gem.license = "MIT"
-  gem.summary = %Q{TODO: one-line summary of your gem}
-  gem.description = %Q{TODO: longer description of your gem}
+  gem.summary = %Q{Puxa dados sobre instituições de ensino superior do site do MEC para o formato CSV.}
+  gem.description = %Q{Puxa dados sobre instituições de ensino superior do site do MEC para o formato CSV.}
   gem.email = "berpasan@gmail.com"
   gem.authors = ["Bernardo de Pádua"]
-  gem.executables = ['bin/xupa_emec']
+  gem.executables = ['xupa_emec']
   # Include your dependencies below. Runtime dependencies are required when using your gem,
   # and development dependencies are only needed for development (ie running rake tasks, tests, etc)
-  gem.add_runtime_dependency 'active_support', '~> 3.0'
+  gem.add_runtime_dependency 'activesupport', '~> 3.0'
   gem.add_runtime_dependency 'mechanize', '~> 1.0'
   gem.add_runtime_dependency 'trollop', '~> 1.16'
   gem.add_runtime_dependency 'fastercsv', '~> 1.5'
   gem.add_runtime_dependency 'nokogiri', '~> 1.4'
-
+  gem.version = XupaEmec::Version::STRING
   #  gem.add_development_dependency 'rspec', '> 1.2.3'
 end
 Jeweler::RubygemsDotOrgTasks.new

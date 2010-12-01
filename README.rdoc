@@ -1,6 +1,8 @@
 = xupa_emec
 
-Xupa dados sobre instituições de ensino superior do site do e-MEC num formato CSV. 
+Xupa dados sobre instituições de ensino superior do site do e-MEC num formato CSV.
+
+Colocado em open source pelo simples motivo de ficar mais fácil de instalar/replicar em outras máquinas, mas não espero que seja usado por ninguém (surpreenda-me!).
 
 == Contributing to xupa_emec
  
