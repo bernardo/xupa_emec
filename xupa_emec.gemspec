@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{xupa_emec}
-  s.version = "1.0.4"
+  s.version = "1.0.5"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Bernardo de P\303\241dua"]
-  s.date = %q{2010-12-01}
+  s.date = %q{2010-12-10}
   s.default_executable = %q{xupa_emec}
   s.description = %q{Puxa dados sobre instituições de ensino superior do site do MEC para o formato CSV.}
   s.email = %q{berpasan@gmail.com}
@@ -20,6 +20,12 @@ Gem::Specification.new do |s|
   ]
   s.files = [
     ".document",
+    ".idea/dictionaries/bernardo.xml",
+    ".idea/encodings.xml",
+    ".idea/misc.xml",
+    ".idea/modules.xml",
+    ".idea/vcs.xml",
+    ".idea/xupa_emec.iml",
     "Gemfile",
     "Gemfile.lock",
     "LICENSE.txt",
