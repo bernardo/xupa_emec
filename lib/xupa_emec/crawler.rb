@@ -18,7 +18,9 @@ module XupaEmec
         })
 
 
-      ies_url = r.search('#lista_resultado > table > tbody > tr > td')[2].inner_html.match( /detalhamento\/(.*)\' \)/ )[1]
+      ies_name_cell = r.search('#lista_resultado > table > tbody > tr > td')[2]
+      return unless ies_name_cell
+      ies_url = ies_name_cell.inner_html.match( /detalhamento\/(.*)\' \)/ )[1]
 
       puts "Buscando dados de '#{ies_search_name}' em #{ies_url}..."
       ies_data = agent.get("http://emec.mec.gov.br/emec/consulta-ies/index/#{ies_url}")

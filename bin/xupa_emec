@@ -37,7 +37,7 @@ File.open(opts[:entrada], "r") do |input|
     iess_to_search.each_with_index do |line, index|
 
       raw_name = line.css('td:nth-child(2)').text.strip
-      ies_search_name = raw_name.split('-').max{|a,b| a.length <=> b.length } #pega o nome maior
+      ies_search_name = raw_name.split('-').max{|a,b| a.length <=> b.length }.strip #pega o nome maior
       
       puts
       puts "#{index+1} - Buscando nome da instituição '#{ies_search_name}'..."
@@ -51,7 +51,8 @@ File.open(opts[:entrada], "r") do |input|
           out_csv << new_hash
         end
       else
-        out_csv << crawler.crawl(ies_search_name)
+        result = crawler.crawl(ies_search_name)
+        out_csv << result if result
       end
       
     end
