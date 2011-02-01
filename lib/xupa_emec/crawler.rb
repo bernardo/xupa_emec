@@ -1,7 +1,10 @@
+require 'base64'
+
 module XupaEmec
   class Crawler
     def initialize(options={})
       @search_courses = options[:search_courses]
+      @vacancies_estimation = options[:vacancies_estimation]
       @agent = options[:agent] || Mechanize.new
     end
     
@@ -58,8 +61,36 @@ module XupaEmec
         match_results = courses_page.search("div.campform > div:first-child").text.match(/Registro\(s\)\: 1 a \d+ de (\d+)/)
         if match_results
           ies_info['num_cursos'] = match_results[1]
+          if @vacancies_estimation
+            ies_info['vacancies'] = 0
+            courses_pages = courses_page.search("table#listar-ies-cadastro > tbody > tr").map{ |l| l.search('td > a').first.attributes['href'].value }
+            courses_pages.each do |courses_url|
+              # http://emec.mec.gov.br/emec/consulta-curso/listar-curso-desagrupado/9f1aa921d96ca1df24a34474cc171f61/MQ==/d96957f455f6405d14c6542552b0f6eb/MTIzMA==
+              courses_url.gsub!('detalhamento', 'listar-curso-desagrupado').gsub!('consulta-cadastro', 'consulta-curso')
+              courses_in_campus = agent.get(courses_url)
+              puts " *** URL: #{courses_url}"
+              courses_in_campus.search("table > tbody > tr").map{ |l| l.search('td').first.text.strip }.each do |course_in_campus_id|
+                # Macaco das URLs bizarras do e-mec:
+                #   http://emec/consulta-curso/detalhe-curso-tabela/ + md5('co_ies_curso') + / base64(course_in_campus_id)
+                #   md5('co_ies_curso') => c1999930082674af6577f0c513f05a96
+                # Exemplos:
+                #   http://emec.mec.gov.br/emec/consulta-curso/detalhe-curso-tabela/c1999930082674af6577f0c513f05a96/NDQ5Mjc=
+                #   http://emec.mec.gov.br/emec/consulta-curso/detalhe-curso-tabela/c1999930082674af6577f0c513f05a96/NDQ2MTU=
+                course_in_campus_page = agent.get "http://emec.mec.gov.br/emec/consulta-curso/detalhe-curso-tabela/c1999930082674af6577f0c513f05a96/#{Base64.encode64 course_in_campus_id}"
+                vacancies = 0
+                course_in_campus_page.search("table.avalTabCampos > tr:nth-child(4) > td:nth-child(4)").first.text.strip.scan(/\:(\d*)/).each do |data|
+                  vacancies += data[0].to_i
+                end
+                puts "    *** ID: #{course_in_campus_id}"
+                puts "    *** VAGAS: #{vacancies}"
+                ies_info['vacancies'] += vacancies
+              end
+            end
+            ies_info['vacancies_mean'] = ies_info['vacancies'].to_f / ies_info['num_cursos'].to_i
+          end
           ies_info['lista_cursos'] = courses_page.search("table#listar-ies-cadastro > tbody > tr").map{|l| l.search('td').first.text.gsub('&nbsp;', '').strip}.join(', ')
-        end      
+          
+        end
       end
       puts "Informação processada para '#{ies_search_name}' :"
       puts ies_info.to_yaml

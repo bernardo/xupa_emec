@@ -15,12 +15,14 @@ as opções são:
   opt :saida, "Arquivo csv que será gerado", :short => 'o', :default => 'out.csv'
   opt :quebraemail, "Gera uma linha por email", :short => 'q' 
   opt :buscacursos, "Busca lista de cursos das IES (demora mais)", :short => 'c' 
+  opt :estimaalunos, "Estima numero de alunos somando o total de vagas por curso (demora muito mais)", :short => 's' 
 end
 
-crawler = XupaEmec::Crawler.new(:search_courses => opts[:buscacursos])
+crawler = XupaEmec::Crawler.new(:search_courses => (opts[:buscacursos] || opts[:estimaalunos]), :vacancies_estimation => opts[:estimaalunos] )
 
 headers = ['nome', 'sigla', 'nome_limpo', 'tipo', 'cidade', 'tel', 'site', 'email', 'mantenedora', 'representante_nome', 'representante_primeiro_nome', 'representante_cargo']
-headers << 'num_cursos' << 'lista_cursos' if opts[:buscacursos]
+headers << 'num_cursos' << 'lista_cursos' if opts[:buscacursos] || opts[:estimaalunos]
+headers << 'total_vagas' << 'media_de_vagas_por_curso' if opts[:estimaalunos]
 
 File.open(opts[:entrada], "r") do |input|
 
