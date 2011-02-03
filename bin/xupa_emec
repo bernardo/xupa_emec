@@ -20,9 +20,9 @@ end
 
 crawler = XupaEmec::Crawler.new(:search_courses => (opts[:buscacursos] || opts[:estimaalunos]), :vacancies_estimation => opts[:estimaalunos] )
 
-headers = ['nome', 'sigla', 'nome_limpo', 'tipo', 'cidade', 'tel', 'site', 'email', 'mantenedora', 'representante_nome', 'representante_primeiro_nome', 'representante_cargo']
+headers = ['nome', 'sigla', 'nome_limpo', 'tipo', 'uf', 'cidade', 'tel', 'site', 'email', 'mantenedora', 'representante_nome', 'representante_primeiro_nome', 'representante_cargo']
 headers << 'num_cursos' << 'lista_cursos' if opts[:buscacursos] || opts[:estimaalunos]
-headers << 'total_vagas' << 'media_de_vagas_por_curso' if opts[:estimaalunos]
+headers << 'total_vagas' << 'media_de_vagas_por_curso' << 'vagas_presencias' << 'vagas_a_distancia' if opts[:estimaalunos]
 
 File.open(opts[:entrada], "r") do |input|
 
@@ -37,26 +37,29 @@ File.open(opts[:entrada], "r") do |input|
     puts
 
     iess_to_search.each_with_index do |line, index|
+      begin
+        raw_name = line.css('td:nth-child(2)').text.strip
+        ies_search_name = raw_name.split('-').max{|a,b| a.length <=> b.length }.strip #pega o nome maior
 
-      raw_name = line.css('td:nth-child(2)').text.strip
-      ies_search_name = raw_name.split('-').max{|a,b| a.length <=> b.length }.strip #pega o nome maior
-      
-      puts
-      puts "#{index+1} - Buscando nome da instituição '#{ies_search_name}'..."
+        puts
+        puts "#{index+1} - Buscando nome da instituição '#{ies_search_name}'..."
 
 
-      if opts[:quebraemail]
-        ies_hash = crawler.crawl(ies_search_name)
-        ies_hash['email'].split(',').each do |email|
-          new_hash = ies_hash.clone
-          new_hash['email'] = email
-          out_csv << new_hash
+        if opts[:quebraemail]
+          ies_hash = crawler.crawl(ies_search_name)
+          ies_hash['email'].split(',').each do |email|
+            new_hash = ies_hash.clone
+            new_hash['email'] = email
+            out_csv << new_hash
+          end
+        else
+          result = crawler.crawl(ies_search_name)
+          out_csv << result if result
         end
-      else
-        result = crawler.crawl(ies_search_name)
-        out_csv << result if result
+      rescue
+        puts "#{index+1} - RETRY! Instituição: '#{ies_search_name}'..."
+        retry
       end
-      
     end
 
   end

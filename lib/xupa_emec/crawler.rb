@@ -48,6 +48,8 @@ module XupaEmec
 
       ies_info['cidade'] = ies_data.search("table.tab_paleta > tr:nth-child(4) tr:nth-child(5) > td:nth-child(2)").first.text.strip
 
+      ies_info['uf'] = ies_data.search("table.tab_paleta > tr:nth-child(4) tr:nth-child(5) > td:nth-child(4)").first.text.strip.upcase
+
       ies_info['tel'] = ies_data.search("table.tab_paleta > tr:nth-child(4) tr:nth-child(6) > td:nth-child(2)").first.text.strip
 
       ies_info['tipo'] = ies_data.search("table.tab_paleta > tr:nth-child(4) tr:nth-child(7) > td:nth-child(2)").first.text.strip
@@ -62,14 +64,16 @@ module XupaEmec
         if match_results
           ies_info['num_cursos'] = match_results[1]
           if @vacancies_estimation
-            ies_info['vacancies'] = 0
+            ies_info['total_vagas'] ||= 0
+            ies_info['vagas_presencias'] ||= 0
+            ies_info['vagas_a_distancia'] ||= 0
             courses_pages = courses_page.search("table#listar-ies-cadastro > tbody > tr").map{ |l| l.search('td > a').first.attributes['href'].value }
             courses_pages.each do |courses_url|
               # http://emec.mec.gov.br/emec/consulta-curso/listar-curso-desagrupado/9f1aa921d96ca1df24a34474cc171f61/MQ==/d96957f455f6405d14c6542552b0f6eb/MTIzMA==
               courses_url.gsub!('detalhamento', 'listar-curso-desagrupado').gsub!('consulta-cadastro', 'consulta-curso')
               courses_in_campus = agent.get(courses_url)
               puts " *** URL: #{courses_url}"
-              courses_in_campus.search("table > tbody > tr").map{ |l| l.search('td').first.text.strip }.each do |course_in_campus_id|
+              courses_in_campus.search("table > tbody > tr").map{ |l| [l.search('td').first.text.strip, l.search('td:nth-child(2)').first.text.strip == "A Distância"] }.each do |course_in_campus_id, distance|
                 # Macaco das URLs bizarras do e-mec:
                 #   http://emec/consulta-curso/detalhe-curso-tabela/ + md5('co_ies_curso') + / base64(course_in_campus_id)
                 #   md5('co_ies_curso') => c1999930082674af6577f0c513f05a96
@@ -83,15 +87,23 @@ module XupaEmec
                 end
                 puts "    *** ID: #{course_in_campus_id}"
                 puts "    *** VAGAS: #{vacancies}"
-                ies_info['vacancies'] += vacancies
+                ies_info['total_vagas'] += vacancies
+                if distance
+                  ies_info['vagas_a_distancia'] += vacancies
+                else
+                  ies_info['vagas_presencias'] += vacancies
+                end
               end
             end
-            ies_info['vacancies_mean'] = ies_info['vacancies'].to_f / ies_info['num_cursos'].to_i
           end
           ies_info['lista_cursos'] = courses_page.search("table#listar-ies-cadastro > tbody > tr").map{|l| l.search('td').first.text.gsub('&nbsp;', '').strip}.join(', ')
           
         end
       end
+      if @vacancies_estimation
+        ies_info['media_de_vagas_por_curso'] = ies_info['total_vagas'].to_f / ies_info['num_cursos'].to_i
+      end
+
       puts "Informação processada para '#{ies_search_name}' :"
       puts ies_info.to_yaml
       
